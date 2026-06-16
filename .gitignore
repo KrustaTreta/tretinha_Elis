@@ -1,0 +1,8 @@
+.streamlit/
+backend/
+config.json
+google_creds.json
+*.db
+
+# Ignora qualquer arquivo secrets.toml solto na raiz ou em outras pastas
+secrets.toml
