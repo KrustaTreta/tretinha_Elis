@@ -12,7 +12,7 @@
             font-family: 'Open Sans', sans-serif; 
             background-color: #F0F9FF; /* Fundo azul bebê bem leve */
             color: #1E293B; 
-            font-size: 1.25rem; /* Fonte aumentada para idosos */
+            font-size: 1.25rem; /* Fonte aumentada para melhor leitura */
         }
         h1 { 
             font-size: 3rem; 
@@ -39,6 +39,12 @@
             display: flex;
             flex-direction: column;
             justify-content: space-between;
+            transition: transform 0.2s;
+        }
+        .card-presente.ganhado {
+            background-color: #F8FAFC;
+            border: 2px dashed #CBD5E1;
+            opacity: 0.85;
         }
         .img-produto { 
             height: 160px; 
@@ -56,7 +62,6 @@
             width: 100%; 
             border: none; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            transition: background-color 0.2s;
         }
         .btn-custom:hover { 
             background-color: #0369A1; 
@@ -68,7 +73,6 @@
             border-radius: 6px;
             font-weight: 700;
         }
-        /* Estilos adicionais para o painel administrativo */
         .admin-section {
             background: white;
             border-radius: 20px;
@@ -115,7 +119,7 @@
             <ol class="mb-0 fs-5">
                 <li>Dê uma olhada nos presentes disponíveis logo abaixo.</li>
                 <li>Quando gostar de um, clique no botão azul <b>"Quero dar este presente"</b>.</li>
-                <li>Escreva seu nome no aviso que vai aparecer na tela e confirme. Pronto, já fica guardado!</li>
+                <li>Escreva o seu nome no aviso que vai aparecer no ecrã e confirme. Pronto, já fica guardado!</li>
             </ol>
         </div>
 
@@ -124,8 +128,18 @@
             <h3>Carregando a listinha da Elis... ⏳</h3>
         </div>
 
-        <div class="row row-cols-1 row-cols-md-3 g-4" id="grid-presentes">
-            </div>
+        <div id="secao-faltando" class="d-none">
+            <h2 class="fw-bold text-primary mb-4">🛒 Presentes Disponíveis</h2>
+            <div class="row row-cols-1 row-cols-md-3 g-4 mb-5" id="grid-presentes-faltando">
+                </div>
+        </div>
+
+        <div id="secao-ganhados" class="d-none mt-5">
+            <hr class="my-5" style="border-top: 3px dashed #CBD5E1;">
+            <h2 class="fw-bold text-success mb-4">🎉 Presentes que a Elis já ganhou!</h2>
+            <div class="row row-cols-1 row-cols-md-3 g-4" id="grid-presentes-ganhados">
+                </div>
+        </div>
     </div>
 
     <div class="container my-5 d-none" id="tela-admin">
@@ -144,32 +158,14 @@
         </ul>
 
         <div id="subaba-visualizar" class="admin-section">
-            <div class="table-responsive">
-                <table class="table table-striped table-hover align-middle fs-6">
-                    <thead class="table-dark">
-                        <tr>
-                            <th>Foto</th>
-                            <th>Item</th>
-                            <th>Categoria</th>
-                            <th>Tamanho</th>
-                            <th>Qtd</th>
-                            <th>Status</th>
-                            <th>Quem vai dar</th>
-                            <th>Telefone</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabela-admin-corpo">
-                        </tbody>
-                </table>
             </div>
-        </div>
 
         <div id="subaba-cadastrar" class="admin-section d-none">
             <h3 class="fw-bold text-dark mb-4">Adicionar Item à Planilha</h3>
             <div class="row g-3 fs-5">
                 <div class="col-md-6">
                     <label class="form-label fw-bold">Nome do Presente / Item:</label>
-                    <input type="text" id="add-nome" class="form-control form-control-lg" placeholder="Ex: Banheira Dobrável, Pomada Bepantol">
+                    <input type="text" id="add-nome" class="form-control form-control-lg" placeholder="Ex: Banheira Dobrável">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Categoria:</label>
@@ -183,7 +179,7 @@
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Tamanho:</label>
-                    <input type="text" id="add-tamanho" class="form-control form-control-lg" placeholder="Ex: P, M, G, Único" value="Único">
+                    <input type="text" id="add-tamanho" class="form-control form-control-lg" value="Único">
                 </div>
                 <div class="col-md-3">
                     <label class="form-label fw-bold">Quantidade Necessária:</label>
@@ -193,7 +189,7 @@
                     <label class="form-label fw-bold">Foto do Produto (Direto do Celular):</label>
                     <input type="file" id="add-foto-arquivo" class="form-control form-control-lg" accept="image/*" onchange="fazerUploadImgBB()">
                     <input type="hidden" id="add-foto" value="">
-                    <small id="status-upload" class="text-muted d-block mt-1">Tire uma foto com a câmera ou escolha da galeria.</small>
+                    <small id="status-upload" class="text-muted d-block mt-1">Tire uma foto ou escolha da galeria.</small>
                 </div>
                 <div class="col-md-4">
                     <label class="form-label fw-bold">Disponibilidade / Status:</label>
@@ -229,7 +225,7 @@
                     <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalLogin"></button>
                 </div>
                 <div class="modal-body py-4">
-                    <p class="text-muted fs-6 mb-3">Digite la senha secreta dos pais para ver o painel de controle:</p>
+                    <p class="text-muted fs-6 mb-3">Digite a senha secreta dos pais para ver o painel de controle:</p>
                     <input type="password" id="senha-admin" class="form-control form-control-lg text-center fs-3 mb-3" placeholder="Digite a senha">
                     <button class="btn btn-primary btn-lg w-100 fw-bold rounded-3 fs-5" onclick="verificarSenha()">Entrar 🔓</button>
                 </div>
@@ -237,21 +233,19 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        // ⚠️ ATENÇÃO: COLOQUE A SUA URL COMPLETA DO GOOGLE APPS SCRIPT AQUI (Terminada em /exec)
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqD7-lybBQhIGOLZsPbRLJ2dYdUJTcZ6T_zwr4GmUbp2cA80pWa5BK5_pSVwXEb0Tk6Q/exec";
-        
-        // 🔑 COLOQUE A SUA CHAVE DE API DO IMGBB AQUI PARA O UPLOAD DE FOTOS FUNCIONAR
-        const IMGBB_KEY = "4aa1c96b56d9fe45617c03596ff20da8";
+    <script src="config.js"></script>
 
-        // Senha secreta para acesso ao gerenciador dos pais
-        const SENHA_PAIS = "elis2026";
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <script>
+        // Carrega as credenciais vindas do config.js
+        const WEB_APP_URL = CONFIG.WEB_APP_URL;
+        const IMGBB_KEY = CONFIG.IMGBB_KEY;
+        const SENHA_PAIS = CONFIG.SENHA_PAIS;
 
         let cacheItens = [];
         let modalLoginBootstrap;
 
-        // Gerencia a navegação entre a tela pública dos convidados e a Área dos Pais
         function alternarTela(tela) {
             const telaConvidados = document.getElementById('tela-convidados');
             const telaAdmin = document.getElementById('tela-admin');
@@ -266,6 +260,7 @@
                 menuAdmin.classList.add('text-white-50');
             } else if (tela === 'admin') {
                 telaConvidados.classList.add('d-none');
+                telaAdmin.setTimeout;
                 telaAdmin.classList.remove('d-none');
                 menuLista.classList.remove('active', 'fw-bold');
                 menuAdmin.classList.add('active', 'fw-bold');
@@ -274,7 +269,6 @@
             }
         }
 
-        // Alterna estritamente entre ver as tabelas e abrir o formulário de cadastro na Área dos Pais
         function mudarSubAba(aba) {
             const btnVis = document.getElementById('tab-visualizar');
             const btnCad = document.getElementById('tab-cadastrar');
@@ -295,7 +289,6 @@
             }
         }
 
-        // Exibe campos adicionais de doador/telefone caso o item cadastrado já tenha sido recebido
         function verificarStatusForm() {
             const status = document.getElementById('add-status').value;
             const blocoGanhos = document.getElementById('campos-ganhos');
@@ -306,17 +299,14 @@
             }
         }
 
-        // Inicializa e exibe o modal de autenticação na tela
         function abrirModalLogin() {
             document.getElementById('senha-admin').value = "";
             modalLoginBootstrap = new bootstrap.Modal(document.getElementById('modalLogin'));
             modalLoginBootstrap.show();
         }
 
-        // Valida a credencial digitada pelos pais
         function verificarSenha() {
-            const senhaDigitada = document.getElementById('senha-admin').value;
-            if (senhaDigitada === SENHA_PAIS) {
+            if (document.getElementById('senha-admin').value === SENHA_PAIS) {
                 modalLoginBootstrap.hide();
                 alternarTela('admin');
             } else {
@@ -324,19 +314,11 @@
             }
         }
 
-        // --- ENVIAR FOTO DIRETO DO CELULAR PARA O IMGBB VIA API ---
         async function fazerUploadImgBB() {
             const arquivoInput = document.getElementById('add-foto-arquivo');
             const statusTexto = document.getElementById('status-upload');
             const btnSalvar = document.getElementById('btn-salvar-item');
-            
             if (arquivoInput.files.length === 0) return;
-            
-            if (IMGBB_KEY === "SUA_CHAVE_DO_IMGBB_AQUI" || !IMGBB_KEY) {
-                statusTexto.innerHTML = "⚠️ API Key do ImgBB não configurada no código JavaScript!";
-                statusTexto.className = "text-danger fw-bold d-block mt-1";
-                return;
-            }
 
             const arquivo = arquivoInput.files[0];
             const formData = new FormData();
@@ -352,221 +334,47 @@
                     body: formData
                 });
                 const resultado = await resposta.json();
-
                 if (resultado.success) {
                     document.getElementById('add-foto').value = resultado.data.url;
                     statusTexto.innerHTML = "✅ Foto carregada e salva com sucesso!";
                     statusTexto.className = "text-success fw-bold d-block mt-1";
-                } else {
-                    throw new Error();
-                }
+                } else { throw new Error(); }
             } catch (erro) {
-                statusTexto.innerHTML = "❌ Erro ao subir foto. O item será salvo com uma imagem padrão.";
+                statusTexto.innerHTML = "❌ Erro ao subir foto. O item usará uma imagem padrão.";
                 statusTexto.className = "text-danger fw-bold d-block mt-1";
-            } finally {
-                btnSalvar.disabled = false;
-            }
+            } finally { btnSalvar.disabled = false; }
         }
 
-        // --- LEITURA E EXIBIÇÃO DE PRESENTES DISPONÍVEIS (CONVIDADOS) ---
+        // --- CARREGAR PRESENTES NAS DUAS SEÇÕES PÚBLICAS ---
         async function carregarPresentes() {
             try {
                 const res = await fetch(WEB_APP_URL);
                 cacheItens = await res.json();
                 
-                const grid = document.getElementById("grid-presentes");
-                const carregando = document.getElementById("carregando");
-                grid.innerHTML = "";
-                carregando.style.display = "none";
+                document.getElementById("carregando").style.display = "none";
+                document.getElementById("secao-faltando").classList.remove('d-none');
+                document.getElementById("secao-ganhados").classList.remove('d-none');
 
-                const disponiveis = cacheItens.filter(item => item.Status === "🛒 Faltando");
+                const gridFaltando = document.getElementById("grid-presentes-faltando");
+                const gridGanhados = document.getElementById("grid-presentes-ganhados");
+                
+                gridFaltando.innerHTML = "";
+                gridGanhados.innerHTML = "";
 
-                if (disponiveis.length === 0) {
-                    grid.innerHTML = "<div class='w-100 text-center my-5'><h3>🎉 Que alegria! Todos os presentes já foram reservados! Muito obrigado! ❤️</h3></div>";
-                    return;
-                }
-
-                disponiveis.forEach(item => {
+                cacheItens.forEach(item => {
                     const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") 
                         ? item['URL da Foto'] 
                         : "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200";
 
-                    grid.innerHTML += `
-                        <div class="col">
-                            <div class="card-presente">
-                                <div>
-                                    <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
-                                        <img src="${fotoLink}" class="img-produto">
-                                    </div>
-                                    <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
-                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">🏷️ <b>Categoria:</b> ${item['Tipo']}</p>
-                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
-                                    <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} unidade(s)</p>
-                                </div>
-                                <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
-                                    Quero dar este presente 🙋‍♂️
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                document.getElementById("carregando").innerHTML = "<h3 class='text-danger'>Erro ao carregar a lista. Por favor, verifique a URL do Apps Script. ❌</h3>";
-            }
-        }
-
-        // --- CONSTRUÇÃO DO PAINEL COM DUAS TABELAS SEPARADAS (VISÃO DOS PAIS) ---
-        function renderizarTabelaAdmin() {
-            const secaoVisualizar = document.getElementById("subaba-visualizar");
-            
-            // Forçamos a reestruturação da aba para conter duas tabelas limpas e organizadas
-            secaoVisualizar.innerHTML = `
-                <div class="mb-5">
-                    <h4 class="fw-bold text-danger mb-3">🚨 Itens que Ainda Faltam Cadastrar / Ganhar</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle fs-6">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Foto</th>
-                                    <th>Item</th>
-                                    <th>Categoria</th>
-                                    <th>Tamanho</th>
-                                    <th>Qtd</th>
-                                    <th>Status</th>
-                                    <th>Quem vai dar</th>
-                                    <th>Telefone</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela-admin-faltando"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <div class="mt-4">
-                    <h4 class="fw-bold text-success mb-3">✅ Conquistados! Itens que Já Ganhamos / Foram Reservados</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle fs-6">
-                            <thead class="table-success table-dark border-success">
-                                <tr>
-                                    <th>Foto</th>
-                                    <th>Item</th>
-                                    <th>Categoria</th>
-                                    <th>Tamanho</th>
-                                    <th>Qtd</th>
-                                    <th>Status</th>
-                                    <th>Quem deu / Reservou</th>
-                                    <th>Telefone</th>
-                                </tr>
-                            </thead>
-                            <tbody id="tabela-admin-ganhados"></tbody>
-                        </table>
-                    </div>
-                </div>
-            `;
-
-            const corpoFaltando = document.getElementById("tabela-admin-faltando");
-            const corpoGanhados = document.getElementById("tabela-admin-ganhados");
-
-            cacheItens.forEach(item => {
-                const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") ? item['URL da Foto'] : "";
-                const doador = item['Doador'] || "-";
-                const telefone = item['Telefone'] || "-";
-
-                const linhaHTML = `
-                    <tr>
-                        <td class="text-center">${fotoLink ? `<img src="${fotoLink}">` : "❌"}</td>
-                        <td class="fw-bold">${item['Nome do Item']}</td>
-                        <td>${item['Tipo']}</td>
-                        <td><span class="badge bg-secondary fs-6">${item['Tamanho']}</span></td>
-                        <td>${item['Quantidade']}</td>
-                        <td><span class="badge ${item['Status'].includes('Faltando') ? 'bg-danger' : 'bg-success'} fs-6">${item['Status']}</span></td>
-                        <td class="text-primary fw-bold">${doador}</td>
-                        <td>${telefone}</td>
-                    </tr>
-                `;
-
-                // Filtra e injeta dinamicamente na tabela correspondente ao status
-                if (item['Status'] === "🛒 Faltando") {
-                    corpoFaltando.innerHTML += linhaHTML;
-                } else {
-                    corpoGanhados.innerHTML += linhaHTML;
-                }
-            });
-
-            // Se alguma das sublistas estiver vazia, adiciona um aviso amigável na linha
-            if (corpoFaltando.innerHTML === "") {
-                corpoFaltando.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item faltando! O enxoval está completo! 🎉</td></tr>`;
-            }
-            if (corpoGanhados.innerHTML === "") {
-                corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido ou reservado ainda. ⏳</td></tr>`;
-            }
-        }
-
-        // --- INSERÇÃO DE NOVO PRESENTE NA PLANILHA DO GOOGLE ---
-        async function salvarNovoItem() {
-            const nome = document.getElementById('add-nome').value;
-            const tipo = document.getElementById('add-tipo').value;
-            const tamanho = document.getElementById('add-tamanho').value;
-            const quantidade = document.getElementById('add-qtd').value;
-            const foto = document.getElementById('add-foto').value;
-            const status = document.getElementById('add-status').value;
-            const doador = document.getElementById('add-doador').value;
-            const telefone = document.getElementById('add-telefone').value;
-
-            if (!nome) { 
-                alert("Por favor, digite o nome do item!"); 
-                return; 
-            }
-
-            alert("Sincronizando novo item com o Google Sheets... Clique em OK e aguarde.");
-            
-            await fetch(WEB_APP_URL, {
-                method: "POST", 
-                mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
-            });
-
-            alert("Item adicionado com sucesso direto no banco! 🎉");
-            location.reload();
-        }
-
-        // --- ATRIBUIÇÃO DE RESERVA DE ITEM (CONVIDADOS) ---
-        async function reservarItem(codigo, nomeItem) {
-            const doador = prompt(`Ficamos muito felizes! Você escolheu: ${nomeItem}.\n\nPor favor, digite seu Nome e Sobrenome para sabermos quem deu:`);
-            
-            if (!doador || doador.trim() === "") {
-                alert("Reserva cancelada. É necessário colocar seu nome para confirmar o presente.");
-                return;
-            }
-
-            const telefone = prompt("Digite seu número de Telefone ou WhatsApp (Opcional):") || "";
-
-            try {
-                alert("Salvando sua escolha... Clique em OK e aguarde um segundo.");
-
-                await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors", 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: "reservar",
-                        codigo: codigo,
-                        doador: doador,
-                        telefone: telefone
-                    })
-                });
-                
-                alert(`Prontinho, ${doador}! O item foi guardado para você. Muito obrigado pelo carinho com a Elis! ❤️`);
-                location.reload();
-            } catch (err) {
-                alert("Prontinho! Seu presente foi reservado com sucesso na planilha! Muito obrigado! ❤️");
-                location.reload();
-            }
-        }
-
-        // Gatilho inicial ao carregar a página
-        carregarPresentes();
-    </script>
-</body>
-</html>
+                    if (item.Status === "🛒 Faltando") {
+                        // Card Ativo com Botão de Reserva
+                        gridFaltando.innerHTML += `
+                            <div class="col">
+                                <div class="card-presente">
+                                    <div>
+                                        <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
+                                            <img src="${fotoLink}" class="img-produto">
+                                        </div>
+                                        <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
+                                        <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
+                                        <p class
