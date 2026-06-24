@@ -1,0 +1,6 @@
+// config.js
+const CONFIG = {
+    WEB_APP_URL: "SUA_URL_DO_APPS_SCRIPT_AQUI",
+    IMGBB_KEY: "SUA_CHAVE_DO_IMGBB_AQUI",
+    SENHA_PAIS: "elis2026"
+};
