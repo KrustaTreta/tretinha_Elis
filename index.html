@@ -240,10 +240,10 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // ⚠️ ATENÇÃO: COLOQUE A SUA URL COMPLETA DO GOOGLE APPS SCRIPT AQUI (Terminada em /exec)
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqD7-lybBQhIGOLZsPbRLJ2dYdUJTcZ6T_zwr4GmUbp2cA80pWa5BK5_pSVwXEb0Tk6Q/exec";
+        const WEB_APP_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
         
         // 🔑 COLOQUE A SUA CHAVE DE API DO IMGBB AQUI PARA O UPLOAD DE FOTOS FUNCIONAR
-        const IMGBB_KEY = "4aa1c96b56d9fe45617c03596ff20da8";
+        const IMGBB_KEY = "SUA_CHAVE_DO_IMGBB_AQUI";
 
         // Senha secreta para acesso ao gerenciador dos pais
         const SENHA_PAIS = "elis2026";
@@ -274,7 +274,7 @@
             }
         }
 
-        // Alterna estritamente entre ver a tabela geral e abrir o formulário de cadastro na Área dos Pais
+        // Alterna estritamente entre ver as tabelas e abrir o formulário de cadastro na Área dos Pais
         function mudarSubAba(aba) {
             const btnVis = document.getElementById('tab-visualizar');
             const btnCad = document.getElementById('tab-cadastrar');
@@ -289,7 +289,7 @@
                 renderizarTabelaAdmin();
             } else if (aba === 'cadastrar') {
                 secVis.classList.add('d-none');
-                secCad.classList.remove('d-none'); // Bug de exibição corrigido com sucesso!
+                secCad.classList.remove('d-none');
                 btnCad.className = "nav-link active fw-bold px-4 py-2";
                 btnVis.className = "nav-link fw-bold px-4 py-2 bg-white border text-dark";
             }
@@ -332,7 +332,7 @@
             
             if (arquivoInput.files.length === 0) return;
             
-            if (IMGBB_KEY === "4aa1c96b56d9fe45617c03596ff20da8" || !IMGBB_KEY) {
+            if (IMGBB_KEY === "SUA_CHAVE_DO_IMGBB_AQUI" || !IMGBB_KEY) {
                 statusTexto.innerHTML = "⚠️ API Key do ImgBB não configurada no código JavaScript!";
                 statusTexto.className = "text-danger fw-bold d-block mt-1";
                 return;
@@ -344,7 +344,7 @@
 
             statusTexto.innerHTML = "📸 Enviando foto para a nuvem... Aguarde ⏳";
             statusTexto.className = "text-warning fw-bold d-block mt-1";
-            btnSalvar.disabled = true; // Bloqueia o clique para evitar inconsistência de dados
+            btnSalvar.disabled = true;
 
             try {
                 const resposta = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
@@ -354,7 +354,6 @@
                 const resultado = await resposta.json();
 
                 if (resultado.success) {
-                    // Injeta a URL pública gerada no campo oculto que vai para o Sheets
                     document.getElementById('add-foto').value = resultado.data.url;
                     statusTexto.innerHTML = "✅ Foto carregada e salva com sucesso!";
                     statusTexto.className = "text-success fw-bold d-block mt-1";
@@ -365,7 +364,7 @@
                 statusTexto.innerHTML = "❌ Erro ao subir foto. O item será salvo com uma imagem padrão.";
                 statusTexto.className = "text-danger fw-bold d-block mt-1";
             } finally {
-                btnSalvar.disabled = false; // Restaura o controle do botão de cadastro
+                btnSalvar.disabled = false;
             }
         }
 
@@ -380,7 +379,6 @@
                 grid.innerHTML = "";
                 carregando.style.display = "none";
 
-                // Filtra estritamente os itens com status de pendência
                 const disponiveis = cacheItens.filter(item => item.Status === "🛒 Faltando");
 
                 if (disponiveis.length === 0) {
@@ -417,17 +415,64 @@
             }
         }
 
-        // --- CONSTRUÇÃO DA TABELA GERENCIAL COMPLETA (VISÃO DOS PAIS) ---
+        // --- CONSTRUÇÃO DO PAINEL COM DUAS TABELAS SEPARADAS (VISÃO DOS PAIS) ---
         function renderizarTabelaAdmin() {
-            const corpoTabela = document.getElementById("tabela-admin-corpo");
-            corpoTabela.innerHTML = "";
+            const secaoVisualizar = document.getElementById("subaba-visualizar");
+            
+            // Forçamos a reestruturação da aba para conter duas tabelas limpas e organizadas
+            secaoVisualizar.innerHTML = `
+                <div class="mb-5">
+                    <h4 class="fw-bold text-danger mb-3">🚨 Itens que Ainda Faltam Cadastrar / Ganhar</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-dark">
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Item</th>
+                                    <th>Categoria</th>
+                                    <th>Tamanho</th>
+                                    <th>Qtd</th>
+                                    <th>Status</th>
+                                    <th>Quem vai dar</th>
+                                    <th>Telefone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-admin-faltando"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4">
+                    <h4 class="fw-bold text-success mb-3">✅ Conquistados! Itens que Já Ganhamos / Foram Reservados</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-success table-dark border-success">
+                                <tr>
+                                    <th>Foto</th>
+                                    <th>Item</th>
+                                    <th>Categoria</th>
+                                    <th>Tamanho</th>
+                                    <th>Qtd</th>
+                                    <th>Status</th>
+                                    <th>Quem deu / Reservou</th>
+                                    <th>Telefone</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabela-admin-ganhados"></tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+
+            const corpoFaltando = document.getElementById("tabela-admin-faltando");
+            const corpoGanhados = document.getElementById("tabela-admin-ganhados");
 
             cacheItens.forEach(item => {
                 const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") ? item['URL da Foto'] : "";
                 const doador = item['Doador'] || "-";
                 const telefone = item['Telefone'] || "-";
 
-                corpoTabela.innerHTML += `
+                const linhaHTML = `
                     <tr>
                         <td class="text-center">${fotoLink ? `<img src="${fotoLink}">` : "❌"}</td>
                         <td class="fw-bold">${item['Nome do Item']}</td>
@@ -439,7 +484,22 @@
                         <td>${telefone}</td>
                     </tr>
                 `;
+
+                // Filtra e injeta dinamicamente na tabela correspondente ao status
+                if (item['Status'] === "🛒 Faltando") {
+                    corpoFaltando.innerHTML += linhaHTML;
+                } else {
+                    corpoGanhados.innerHTML += linhaHTML;
+                }
             });
+
+            // Se alguma das sublistas estiver vazia, adiciona um aviso amigável na linha
+            if (corpoFaltando.innerHTML === "") {
+                corpoFaltando.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item faltando! O enxoval está completo! 🎉</td></tr>`;
+            }
+            if (corpoGanhados.innerHTML === "") {
+                corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido ou reservado ainda. ⏳</td></tr>`;
+            }
         }
 
         // --- INSERÇÃO DE NOVO PRESENTE NA PLANILHA DO GOOGLE ---
@@ -493,7 +553,7 @@
                         action: "reservar",
                         codigo: codigo,
                         doador: doador,
-                        telefone: telephone
+                        telefone: telefone
                     })
                 });
                 
