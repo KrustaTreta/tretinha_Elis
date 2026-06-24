@@ -225,19 +225,21 @@
             }
         }
 
-        function mudarSubAba(aba) {
+       function mudarSubAba(aba) {
             const btnVis = document.getElementById('tab-visualizar');
             const btnCad = document.getElementById('tab-cadastrar');
             const secVis = document.getElementById('subaba-visualizar');
             const secCad = document.getElementById('subaba-cadastrar');
 
             if (aba === 'visualizar') {
-                secVis.classList.remove('d-none'); secCad.classList.add('d-none');
+                secVis.classList.remove('d-none');
+                secCad.classList.add('d-none');
                 btnVis.className = "nav-link active fw-bold px-4 py-2";
                 btnCad.className = "nav-link fw-bold px-4 py-2 bg-white border text-dark";
                 renderizarTabelaAdmin();
             } else {
-                secVis.classList.add('d-none'); secCad.remove('d-none'); secCad.classList.remove('d-none');
+                secVis.classList.add('d-none');
+                secCad.classList.remove('d-none'); // <--- Correção aqui!
                 btnCad.className = "nav-link active fw-bold px-4 py-2";
                 btnVis.className = "nav-link fw-bold px-4 py-2 bg-white border text-dark";
             }
