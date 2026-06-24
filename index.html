@@ -10,16 +10,16 @@
     <style>
         body { 
             font-family: 'Open Sans', sans-serif; 
-            background-color: #F0F9FF; /* Fundo azul bebê bem leve */
+            background-color: #F0F9FF; 
             color: #1E293B; 
-            font-size: 1.25rem; /* Fonte aumentada para idosos */
+            font-size: 1.25rem; 
         }
         h1 { 
             font-size: 3rem; 
             font-weight: 800; 
             color: #0284C7; 
             text-align: center; 
-            margin-top: 30px; 
+            margin-top: 20px; 
         }
         .box-ajuda { 
             background-color: #E0F2FE; 
@@ -28,7 +28,6 @@
             border-radius: 12px; 
             margin-bottom: 30px; 
         }
-        /* CARD DE PRESENTE PREMIUM */
         .card-presente { 
             background: white; 
             border: 2px solid #E2E8F0; 
@@ -47,7 +46,6 @@
             margin-bottom: 15px; 
             border-radius: 8px;
         }
-        /* BOTÃO GIGANTE FÁCIL DE CLICAR NO CELULAR */
         .btn-custom { 
             background-color: #0284C7; 
             color: white; 
@@ -58,132 +56,294 @@
             width: 100%; 
             border: none; 
             box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            transition: background-color 0.2s;
         }
-        .btn-custom:hover { 
-            background-color: #0369A1; 
-            color: white; 
-        }
-        .tag-tamanho {
-            background-color: #F1F5F9;
-            padding: 2px 10px;
-            border-radius: 6px;
-            font-weight: 700;
-        }
+        .btn-custom:hover { background-color: #0369A1; }
+        .tag-tamanho { background-color: #F1F5F9; padding: 2px 10px; border-radius: 6px; font-weight: 700; }
+        .admin-section { background: white; border-radius: 20px; padding: 30px; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.05); margin-top: 20px; }
+        .table img { height: 40px; object-fit: contain; }
+        .nav-pills .nav-link.active { background-color: #0284C7; }
     </style>
 </head>
 <body>
 
-    <div class="container my-5">
+    <!-- NAV BAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark shadow-sm">
+        <div class="container py-1">
+            <a class="navbar-brand fw-bold fs-3" href="#" onclick="alternarTela('convidados')">👶 Enxoval da Elis</a>
+            <div class="collapse navbar-collapse justify-content-end" id="navbarNav">
+                <ul class="navbar-nav gap-2 fs-5">
+                    <li class="nav-item"><a class="nav-link active fw-bold" id="menu-lista" href="#" onclick="alternarTela('convidados')">🍼 Lista de Presentes</a></li>
+                    <li class="nav-item"><a class="nav-link text-white-50" id="menu-admin" href="#" onclick="abrirModalLogin()">🔒 Área dos Pais</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- INTERFACE DOS CONVIDADOS -->
+    <div class="container my-5" id="tela-convidados">
         <h1>👶 Lista de Presentes da Elis</h1>
-        
         <div class="box-ajuda my-4">
             <h3 class="text-primary fw-bold" style="margin-top: 0;">💡 Como escolher o seu presente?</h3>
             <ol class="mb-0 fs-5">
                 <li>Dê uma olhada nos presentes disponíveis logo abaixo.</li>
                 <li>Quando gostar de um, clique no botão azul <b>"Quero dar este presente"</b>.</li>
-                <li>Escreva seu nome no aviso que vai aparecer na tela e confirme. Pronto, já fica guardado!</li>
+                <li>Escreva seu nome e confirme. Pronto, já fica guardado!</li>
             </ol>
         </div>
-
-        <div id="carregando" class="text-center my-5">
-            <div class="spinner-border text-primary mb-3" role="status"></div>
-            <h3>Carregando a listinha da Elis... ⏳</h3>
-        </div>
-
-        <div class="row row-cols-1 row-cols-md-3 g-4" id="grid-presentes">
-            </div>
+        <div id="carregando" class="text-center my-5"><div class="spinner-border text-primary mb-3"></div><h3>Carregando a listinha... ⏳</h3></div>
+        <div class="row row-cols-1 row-cols-md-3 g-4" id="grid-presentes"></div>
     </div>
 
+    <!-- PAINEL ADMINISTRATIVO (CONTEÚDO DOS PAIS) -->
+    <div class="container my-5 d-none" id="tela-admin">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="fw-bold text-primary">🛠️ Painel de Controle (Danilo & Mariana)</h2>
+            <button class="btn btn-secondary fw-bold" onclick="alternarTela('convidados')">Sair do Painel ❌</button>
+        </div>
+
+        <!-- Sub-Abas de Navegação Interna do Painel -->
+        <ul class="nav nav-pills mb-4 fs-5 gap-2" id="adminTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active fw-bold px-4 py-2" id="tab-visualizar" onclick="mudarSubAba('visualizar')">📋 Ver Todos os Itens</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link fw-bold px-4 py-2 bg-white border text-dark" id="tab-cadastrar" onclick="mudarSubAba('cadastrar')">➕ Cadastrar Novo Item</button>
+            </li>
+        </ul>
+
+        <!-- SUB-ABA 1: VISUALIZAR TABELA -->
+        <div id="subaba-visualizar" class="admin-section">
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle fs-6">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>Foto</th>
+                            <th>Item</th>
+                            <th>Categoria</th>
+                            <th>Tamanho</th>
+                            <th>Qtd</th>
+                            <th>Status</th>
+                            <th>Quem vai dar</th>
+                            <th>Telefone</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabela-admin-corpo"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SUB-ABA 2: FORMULÁRIO DE CADASTRO -->
+        <div id="subaba-cadastrar" class="admin-section d-none">
+            <h3 class="fw-bold text-dark mb-4">Adicionar Item à Planilha</h3>
+            <div class="row g-3 fs-5">
+                <div class="col-md-6">
+                    <label class="form-label fw-bold">Nome do Presente / Item:</label>
+                    <input type="text" id="add-nome" class="form-control form-control-lg" placeholder="Ex: Banheira Dobrável, Pomada Bepantol">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Categoria:</label>
+                    <select id="add-tipo" class="form-select form-select-lg">
+                        <option value="Roupa">Roupa</option>
+                        <option value="Fralda">Fralda</option>
+                        <option value="Higiene">Higiene</option>
+                        <option value="Quarto / Decoração">Quarto / Decoração</option>
+                        <option value="Outros">Outros</option>
+                    </select>
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Tamanho:</label>
+                    <input type="text" id="add-tamanho" class="form-control form-control-lg" placeholder="Ex: P, M, G, Único" value="Único">
+                </div>
+                <div class="col-md-3">
+                    <label class="form-label fw-bold">Quantidade Necessária:</label>
+                    <input type="number" id="add-qtd" class="form-control form-control-lg" value="1" min="1">
+                </div>
+                <div class="col-md-5">
+                    <label class="form-label fw-bold">Link da Foto do Produto (Opcional):</label>
+                    <input type="text" id="add-foto" class="form-control form-control-lg" placeholder="https://linkdafoto.com/imagem.jpg">
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">Disponibilidade / Status:</label>
+                    <select id="add-status" class="form-select form-select-lg" onchange="verificarStatusForm()">
+                        <option value="🛒 Faltando">🛒 Ainda não ganhamos (Mostrar na Lista)</option>
+                        <option value="✅ Recebido (Em mãos)">✅ Já Ganhamos / Já Temos (Esconder da Lista)</option>
+                    </select>
+                </div>
+                
+                <!-- Campos extras dinâmicos caso marquem que já ganharam -->
+                <div id="campos-ganhos" class="row g-3 d-none mt-1">
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-success">Quem deu o presente? (Opcional):</label>
+                        <input type="text" id="add-doador" class="form-control form-control-lg" placeholder="Ex: Titia Cláudia">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold text-success">Telefone de quem deu (Opcional):</label>
+                        <input type="text" id="add-telefone" class="form-control form-control-lg" placeholder="Ex: 32999999999">
+                    </div>
+                </div>
+
+                <div class="col-12 mt-4">
+                    <button class="btn btn-success btn-lg px-5 py-3 fw-bold shadow" onclick="salvarNovoItem()">💾 Adicionar à Planilha do Google</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL DE LOGIN -->
+    <div class="modal fade" id="modalLogin" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-4 shadow-lg border-0">
+                <div class="modal-header border-0 pb-0">
+                    <h4 class="modal-title fw-bold text-primary">🔒 Área Reservada</h4>
+                    <button type="button" class="btn-close" data-bs-toggle="modal" data-bs-target="#modalLogin"></button>
+                </div>
+                <div class="modal-body py-4">
+                    <input type="password" id="senha-admin" class="form-control form-control-lg text-center fs-3 mb-3" placeholder="Senha secreta">
+                    <button class="btn btn-primary btn-lg w-100 fw-bold" onclick="verificarSenha()">Entrar 🔓</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        // ⚠️ ATENÇÃO: Substitua o link abaixo pela URL que o seu Google Apps Script gerou!
-        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbxqD7-lybBQhIGOLZsPbRLJ2dYdUJTcZ6T_zwr4GmUbp2cA80pWa5BK5_pSVwXEb0Tk6Q/exec";
+        // ⚠️ COLOQUE A SUA URL DO APPS SCRIPT AQUI
+        const WEB_APP_URL = "SUA_URL_DO_APPS_SCRIPT_AQUI";
+        const SENHA_PAIS = "elis2026";
+
+        let cacheItens = [];
+        let modalLoginBootstrap;
+
+        function alternarTela(tela) {
+            if (tela === 'convidados') {
+                document.getElementById('tela-convidados').classList.remove('d-none');
+                document.getElementById('tela-admin').classList.add('d-none');
+            } else {
+                document.getElementById('tela-convidados').classList.add('d-none');
+                document.getElementById('tela-admin').classList.remove('d-none');
+                renderizarTabelaAdmin();
+            }
+        }
+
+        function mudarSubAba(aba) {
+            const btnVis = document.getElementById('tab-visualizar');
+            const btnCad = document.getElementById('tab-cadastrar');
+            const secVis = document.getElementById('subaba-visualizar');
+            const secCad = document.getElementById('subaba-cadastrar');
+
+            if (aba === 'visualizar') {
+                secVis.classList.remove('d-none'); secCad.classList.add('d-none');
+                btnVis.className = "nav-link active fw-bold px-4 py-2";
+                btnCad.className = "nav-link fw-bold px-4 py-2 bg-white border text-dark";
+                renderizarTabelaAdmin();
+            } else {
+                secVis.classList.add('d-none'); secCad.remove('d-none'); secCad.classList.remove('d-none');
+                btnCad.className = "nav-link active fw-bold px-4 py-2";
+                btnVis.className = "nav-link fw-bold px-4 py-2 bg-white border text-dark";
+            }
+        }
+
+        function verificarStatusForm() {
+            const status = document.getElementById('add-status').value;
+            const blocoGanhos = document.getElementById('campos-ganhos');
+            if (status.includes("Recebido")) {
+                blocoGanhos.classList.remove('d-none');
+            } else {
+                blocoGanhos.classList.add('d-none');
+            }
+        }
+
+        function abrirModalLogin() {
+            modalLoginBootstrap = new bootstrap.Modal(document.getElementById('modalLogin'));
+            modalLoginBootstrap.show();
+        }
+
+        function verificarSenha() {
+            if (document.getElementById('senha-admin').value === SENHA_PAIS) {
+                modalLoginBootstrap.hide(); alternarTela('admin');
+            } else { alert("Senha incorreta!"); }
+        }
 
         async function carregarPresentes() {
             try {
                 const res = await fetch(WEB_APP_URL);
-                const itens = await res.json();
+                cacheItens = await res.json();
+                document.getElementById("carregando").style.display = "none";
                 
                 const grid = document.getElementById("grid-presentes");
-                const carregando = document.getElementById("carregando");
                 grid.innerHTML = "";
-                carregando.style.display = "none";
 
-                // Filtra para exibir apenas os presentes com o status "🛒 Faltando"
-                const disponiveis = itens.filter(item => item.Status === "🛒 Faltando");
-
+                const disponiveis = cacheItens.filter(item => item.Status === "🛒 Faltando");
                 if (disponiveis.length === 0) {
-                    grid.innerHTML = "<div class='w-100 text-center my-5'><h3>🎉 Que alegria! Todos os presentes já foram reservados! Muito obrigado! ❤️</h3></div>";
-                    return;
+                    grid.innerHTML = "<h3>🎉 Todos os presentes da lista foram reservados! ❤️</h3>"; return;
                 }
 
                 disponiveis.forEach(item => {
-                    // Se o link da foto estiver em branco ou quebrado, usa uma imagem padrão bonita
-                    const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") 
-                        ? item['URL da Foto'] 
-                        : "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200";
-
+                    const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0") ? item['URL da Foto'] : "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200";
                     grid.innerHTML += `
-                        <div class="col">
-                            <div class="card-presente">
-                                <div>
-                                    <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
-                                        <img src="${fotoLink}" class="img-produto">
-                                    </div>
-                                    <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
-                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">🏷️ <b>Categoria:</b> ${item['Tipo']}</p>
-                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
-                                    <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} unidade(s)</p>
-                                </div>
-                                <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
-                                    Quero dar este presente 🙋‍♂️
-                                </button>
-                            </div>
-                        </div>
-                    `;
+                        <div class="col"><div class="card-presente"><div>
+                            <img src="${fotoLink}" class="img-produto">
+                            <h4 class="fw-bold mb-3">${item['Nome do Item']}</h4>
+                            <p class="mb-2 text-muted">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
+                            <p class="mb-4 text-muted">🔢 <b>Qtd:</b> ${item['Quantidade']}</p>
+                        </div><button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">Quero dar este presente 🙋‍♂️</button></div></div>`;
                 });
-            } catch (err) {
-                document.getElementById("carregando").innerHTML = "<h3 class='text-danger'>Erro ao carregar a lista. Por favor, feche e abra o site novamente. ❌</h3>";
-            }
+            } catch (e) { document.getElementById("carregando").innerHTML = "<h3>Erro ao carregar a lista. ❌</h3>"; }
+        }
+
+        function renderizarTabelaAdmin() {
+            const corpo = document.getElementById("tabela-admin-corpo");
+            corpo.innerHTML = "";
+            cacheItens.forEach(item => {
+                corpo.innerHTML += `
+                    <tr>
+                        <td>${item['URL da Foto'] ? `<img src="${item['URL da Foto']}">` : "❌"}</td>
+                        <td class="fw-bold">${item['Nome do Item']}</td>
+                        <td>${item['Tipo']}</td>
+                        <td>${item['Tamanho']}</td>
+                        <td>${item['Quantidade']}</td>
+                        <td><span class="badge ${item['Status'].includes('Faltando') ? 'bg-danger' : 'bg-success'} fs-6">${item['Status']}</span></td>
+                        <td class="text-primary fw-bold">${item['Doador'] || "-"}</td>
+                        <td>${item['Telefone'] || "-"}</td>
+                    </tr>`;
+            });
+        }
+
+        async function salvarNovoItem() {
+            const nome = document.getElementById('add-nome').value;
+            const tipo = document.getElementById('add-tipo').value;
+            const tamanho = document.getElementById('add-tamanho').value;
+            const quantidade = document.getElementById('add-qtd').value;
+            const foto = document.getElementById('add-foto').value;
+            const status = document.getElementById('add-status').value;
+            const doador = document.getElementById('add-doador').value;
+            const telefone = document.getElementById('add-telefone').value;
+
+            if(!nome) { alert("Por favor, digite o nome do item!"); return; }
+
+            alert("Salvando item na nuvem... Aguarde.");
+            await fetch(WEB_APP_URL, {
+                method: "POST", mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
+            });
+
+            alert("Item adicionado com sucesso! 🎉");
+            location.reload();
         }
 
         async function reservarItem(codigo, nomeItem) {
-            // Abre caixas de texto nativas do navegador (super fáceis para idosos responderem no celular)
-            const doador = prompt(`Ficamos muito felizes! Você escolheu: ${nomeItem}.\n\nPor favor, digite seu Nome e Sobrenome para sabermos quem deu:`);
-            
-            if (!doador || doador.trim() === "") {
-                alert("Reserva cancelada. É necessário colocar seu nome para confirmar o presente.");
-                return;
-            }
-
-            const telefone = prompt("Digite seu número de Telefone ou WhatsApp (Opcional):") || "";
-
-            try {
-                // Alerta visual de espera
-                alert("Salvando sua escolha... Clique em OK e aguarde um segundo.");
-
-                // Envia os dados para a nossa API gratuita do Google Apps Script
-                await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors", // Crucial para o Google aceitar requisições de fora sem travar
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: "reservar",
-                        codigo: codigo,
-                        doador: doador,
-                        telefone: telefone
-                    })
-                });
-                
-                alert(`Prontinho, ${doador}! O item foi guardado para você. Muito obrigado pelo carinho com a Elis! ❤️`);
-                location.reload(); // Recarrega a página para sumir com o item doado
-            } catch (err) {
-                alert("Prontinho! Seu presente foi reservado com sucesso na planilha! Muito obrigado! ❤️");
-                location.reload();
-            }
+            const doador = prompt(`Você escolheu: ${nomeItem}.\n\nDigite seu Nome e Sobrenome para confirmar:`);
+            if (!doador) return;
+            const telefone = prompt("Digite seu WhatsApp (Opcional):") || "";
+            await fetch(WEB_APP_URL, {
+                method: "POST", mode: "no-cors",
+                body: JSON.stringify({ action: "reservar", codigo, doador, telefone })
+            });
+            alert("Muito obrigado! Presente reservado com sucesso! ❤️");
+            location.reload();
         }
 
-        // Inicia a leitura da tabela assim que a página abre
         carregarPresentes();
     </script>
 </body>
