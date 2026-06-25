@@ -470,6 +470,7 @@
             if (corpoGanhados.innerHTML === "") { corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido. ⏳</td></tr>`; }
         }
 
+        // --- ADIÇÃO DE ITEM COM ATUALIZAÇÃO DE CACHE LOCAL INSTANTÂNEA ---
         async function salvarNovoItem() {
             const nome = document.getElementById('add-nome').value;
             const tipo = document.getElementById('add-tipo').value;
@@ -482,9 +483,9 @@
 
             if (!nome) { alert("Por favor, digite o nome do item!"); return; }
 
-            // 1. CRIAMOS O OBJETO DO NOVO ITEM IGUAL AO QUE VEM DA PLANILHA
+            // 1. Criamos o objeto do novo item para inserção imediata em tela
             const novoItemLocal = {
-                "Código": "GERADO_AUTO_" + Date.now(), // Código temporário local
+                "Código": "GERADO_AUTO_" + Date.now(),
                 "Nome do Item": nome,
                 "Tipo": tipo,
                 "Tamanho": tamanho,
@@ -495,35 +496,47 @@
                 "Telefone": telefone || ""
             };
 
-            // 2. ADICIONAMOS O ITEM DIRETAMENTE NO CACHE DA PÁGINA
+            // 2. Empurramos direto para o array ativo em memória
             cacheItens.push(novoItemLocal);
 
-            // 3. ATUALIZAMOS AS ESTRUTURAS VISUAIS IMEDIATAMENTE
-            renderizarTabelaAdmin(); // Atualiza a tabela na área dos pais
+            // 3. Atualizamos os painéis visuais imediatamente e limpamos os inputs
+            renderizarTabelaAdmin();
+            carregarPresentes(); // Atualiza os cartões da página pública em segundo plano
             
-            // Limpa o formulário para um próximo cadastro
             document.getElementById('add-nome').value = "";
             document.getElementById('add-foto-arquivo').value = "";
             document.getElementById('add-foto').value = "";
             document.getElementById('status-upload').innerHTML = "Tire uma foto ou escolha da galeria.";
             document.getElementById('status-upload').className = "text-muted d-block mt-1";
 
-            // Voltar para a aba de visualização para ver o item inserido
             mudarSubAba('visualizar');
 
-            // 4. ENVIA PARA O GOOGLE SHEETS EM SEGUNDO PLANO (SEM TRAVAR A TELA)
+            // 4. Dispara a gravação persistente no Sheets por trás dos panos (sem travar a interface)
             fetch(WEB_APP_URL, {
                 method: "POST", 
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
             }).then(() => {
-                console.log("✅ Sincronizado com o Google Sheets em segundo plano com sucesso!");
+                console.log("✅ Sincronizado com o Google Sheets com sucesso!");
             }).catch((err) => {
-                console.error("❌ Erro ao sincronizar em segundo plano:", err);
+                console.error("❌ Erro ao sincronizar com o Sheets:", err);
             });
             
-            alert("🎉 Item adicionado com sucesso à sua lista visual! A sincronização com a planilha está a ser feita em segundo plano.");
+            alert("🎉 Item adicionado com sucesso à sua lista visual! A planilha do Google Sheets está a ser atualizada em segundo plano.");
+        }
+
+        async function tratarReservaLocal(codigo, doador, telefone) {
+            // Atualiza o cache local para refletir na tela imediatamente
+            for (let i = 0; i < cacheItens.length; i++) {
+                if (cacheItens[i]["Código"] === codigo) {
+                    cacheItens[i]["Status"] = "⏳ Reservado (Falta receber)";
+                    cacheItens[i]["Doador"] = doador;
+                    cacheItens[i]["Telefone"] = telefone;
+                    break;
+                }
+            }
+            carregarPresentes();
         }
 
         async function reservarItem(codigo, nomeItem) {
@@ -531,18 +544,19 @@
             if (!doador || doador.trim() === "") { alert("Reserva cancelada."); return; }
             const telefone = prompt("Digite seu número de WhatsApp (Opcional):") || "";
 
+            // Otimização visual da reserva
+            tratarReservaLocal(codigo, doador, telefone);
+
             try {
-                alert("Salvando escolha... Aguarde um segundo.");
+                alert("Salvando escolha... Pode clicar em OK.");
                 await fetch(WEB_APP_URL, {
                     method: "POST", mode: "no-cors", 
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ action: "reservar", codigo, doador, telephone: telefone })
                 });
-                alert(`Prontinho, ${doador}! O item foi reservado. Obrigado! ❤️`);
-                location.reload();
+                alert(`Muito obrigado, ${doador}! O item foi reservado de forma definitiva. ❤️`);
             } catch (err) {
                 alert("Prontinho! Seu presente foi reservado com sucesso! ❤️");
-                location.reload();
             }
         }
 
