@@ -260,7 +260,6 @@
                 menuAdmin.classList.add('text-white-50');
             } else if (tela === 'admin') {
                 telaConvidados.classList.add('d-none');
-                telaAdmin.setTimeout;
                 telaAdmin.classList.remove('d-none');
                 menuLista.classList.remove('active', 'fw-bold');
                 menuAdmin.classList.add('active', 'fw-bold');
@@ -377,4 +376,143 @@
                                         </div>
                                         <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
                                         <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
-                                        <p class
+                                        <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} un</p>
+                                    </div>
+                                    <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
+                                        Quero dar este presente 🙋‍♂️
+                                    </button>
+                                </div>
+                            </div>`;
+                    } else {
+                        // Card Passivo Estilizado (Já Ganhou)
+                        gridGanhados.innerHTML += `
+                            <div class="col">
+                                <div class="card-presente ganhado">
+                                    <div>
+                                        <div style="background: #F1F5F9; border-radius:12px; padding:10px; margin-bottom:15px;">
+                                            <img src="${fotoLink}" class="img-produto" style="filter: grayscale(30%);">
+                                        </div>
+                                        <h4 class="fw-bold text-secondary text-decoration-line-through mb-3">${item['Nome do Item']}</h4>
+                                        <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span>${item['Tamanho']}</span></p>
+                                    </div>
+                                    <button class="btn btn-outline-success fw-bold rounded-3 py-2" disabled>
+                                        ✅ Já reservado!
+                                    </button>
+                                </div>
+                            </div>`;
+                    }
+                });
+
+                if (gridFaltando.innerHTML === "") {
+                    gridFaltando.innerHTML = "<div class='w-100 text-center my-3'><h3>🎉 Que alegria! Todos os presentes já foram reservados! ❤️</h3></div>";
+                }
+                if (gridGanhados.innerHTML === "") {
+                    gridGanhados.innerHTML = "<div class='w-100 text-center my-3'><p class='text-muted'>Nenhum item conquistado ainda. Vamos ajudar os papais! ⏳</p></div>";
+                }
+
+            } catch (err) {
+                document.getElementById("carregando").innerHTML = "<h3 class='text-danger'>Erro ao carregar a lista. ❌</h3>";
+            }
+        }
+
+        // --- DUAS TABELAS SEPARADAS (ÁREA DOS PAIS) ---
+        function renderizarTabelaAdmin() {
+            const secaoVisualizar = document.getElementById("subaba-visualizar");
+            secaoVisualizar.innerHTML = `
+                <div class="mb-5">
+                    <h4 class="fw-bold text-danger mb-3">🚨 Itens que Ainda Faltam Cadastrar / Ganhar</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-dark">
+                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem vai dar</th><th>Telefone</th></tr>
+                            </thead>
+                            <tbody id="tabela-admin-faltando"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="fw-bold text-success mb-3">✅ Conquistados! Itens que Já Ganhamos / Foram Reservados</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-success table-dark border-success">
+                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem deu / Reservou</th><th>Telefone</th></tr>
+                            </thead>
+                            <tbody id="tabela-admin-ganhados"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+
+            const corpoFaltando = document.getElementById("tabela-admin-faltando");
+            const corpoGanhados = document.getElementById("tabela-admin-ganhados");
+
+            cacheItens.forEach(item => {
+                const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") ? item['URL da Foto'] : "";
+                const doador = item['Doador'] || "-";
+                const telefone = item['Telefone'] || "-";
+
+                const linhaHTML = `
+                    <tr>
+                        <td class="text-center">${fotoLink ? `<img src="${fotoLink}">` : "❌"}</td>
+                        <td class="fw-bold">${item['Nome do Item']}</td>
+                        <td>${item['Tipo']}</td>
+                        <td><span class="badge bg-secondary fs-6">${item['Tamanho']}</span></td>
+                        <td>${item['Quantidade']}</td>
+                        <td><span class="badge ${item['Status'].includes('Faltando') ? 'bg-danger' : 'bg-success'} fs-6">${item['Status']}</span></td>
+                        <td class="text-primary fw-bold">${doador}</td>
+                        <td>${telefone}</td>
+                    </tr>`;
+
+                if (item['Status'] === "🛒 Faltando") { corpoFaltando.innerHTML += linhaHTML; } 
+                else { corpoGanhados.innerHTML += linhaHTML; }
+            });
+
+            if (corpoFaltando.innerHTML === "") { corpoFaltando.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item faltando! 🎉</td></tr>`; }
+            if (corpoGanhados.innerHTML === "") { corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido. ⏳</td></tr>`; }
+        }
+
+        async function salvarNovoItem() {
+            const nome = document.getElementById('add-nome').value;
+            const tipo = document.getElementById('add-tipo').value;
+            const tamanho = document.getElementById('add-tamanho').value;
+            const quantidade = document.getElementById('add-qtd').value;
+            const foto = document.getElementById('add-foto').value;
+            const status = document.getElementById('add-status').value;
+            const doador = document.getElementById('add-doador').value;
+            const telefone = document.getElementById('add-telefone').value;
+
+            if (!nome) { alert("Por favor, digite o nome do item!"); return; }
+            alert("Sincronizando com o Google Sheets... Aguarde.");
+            
+            await fetch(WEB_APP_URL, {
+                method: "POST", mode: "no-cors",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
+            });
+            alert("Item adicionado com sucesso! 🎉");
+            location.reload();
+        }
+
+        async function reservarItem(codigo, nomeItem) {
+            const doador = prompt(`Ficamos muito felizes! Você escolheu: ${nomeItem}.\n\nDigite seu Nome e Sobrenome para confirmarmos:`);
+            if (!doador || doador.trim() === "") { alert("Reserva cancelada."); return; }
+            const telefone = prompt("Digite seu número de WhatsApp (Opcional):") || "";
+
+            try {
+                alert("Salvando escolha... Aguarde um segundo.");
+                await fetch(WEB_APP_URL, {
+                    method: "POST", mode: "no-cors", 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "reservar", codigo, doador, telephone: telefone })
+                });
+                alert(`Prontinho, ${doador}! O item foi reservado. Obrigado! ❤️`);
+                location.reload();
+            } catch (err) {
+                alert("Prontinho! Seu presente foi reservado com sucesso! ❤️");
+                location.reload();
+            }
+        }
+
+        carregarPresentes();
+    </script>
+</body>
+</html>
