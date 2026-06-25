@@ -260,7 +260,6 @@
                 menuAdmin.classList.add('text-white-50');
             } else if (tela === 'admin') {
                 telaConvidados.classList.add('d-none');
-                telaAdmin.setTimeout;
                 telaAdmin.classList.remove('d-none');
                 menuLista.classList.remove('active', 'fw-bold');
                 menuAdmin.classList.add('active', 'fw-bold');
@@ -366,6 +365,7 @@
                         ? item['URL da Foto'] 
                         : "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200";
 
+<<<<<<< HEAD
                     grid.innerHTML += `
                         <div class="col">
                             <div class="card-presente">
@@ -394,13 +394,98 @@
         function renderizarTabelaAdmin() {
             const corpoTabela = document.getElementById("tabela-admin-corpo");
             corpoTabela.innerHTML = "";
+=======
+                    if (item.Status === "🛒 Faltando") {
+                        // Card Ativo com Botão de Reserva
+                        gridFaltando.innerHTML += `
+                            <div class="col">
+                                <div class="card-presente">
+                                    <div>
+                                        <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
+                                            <img src="${fotoLink}" class="img-produto">
+                                        </div>
+                                        <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
+                                        <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
+                                        <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} un</p>
+                                    </div>
+                                    <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
+                                        Quero dar este presente 🙋‍♂️
+                                    </button>
+                                </div>
+                            </div>`;
+                    } else {
+                        // Card Passivo Estilizado (Já Ganhou)
+                        gridGanhados.innerHTML += `
+                            <div class="col">
+                                <div class="card-presente ganhado">
+                                    <div>
+                                        <div style="background: #F1F5F9; border-radius:12px; padding:10px; margin-bottom:15px;">
+                                            <img src="${fotoLink}" class="img-produto" style="filter: grayscale(30%);">
+                                        </div>
+                                        <h4 class="fw-bold text-secondary text-decoration-line-through mb-3">${item['Nome do Item']}</h4>
+                                        <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span>${item['Tamanho']}</span></p>
+                                    </div>
+                                    <button class="btn btn-outline-success fw-bold rounded-3 py-2" disabled>
+                                        ✅ Já reservado!
+                                    </button>
+                                </div>
+                            </div>`;
+                    }
+                });
+
+                if (gridFaltando.innerHTML === "") {
+                    gridFaltando.innerHTML = "<div class='w-100 text-center my-3'><h3>🎉 Que alegria! Todos os presentes já foram reservados! ❤️</h3></div>";
+                }
+                if (gridGanhados.innerHTML === "") {
+                    gridGanhados.innerHTML = "<div class='w-100 text-center my-3'><p class='text-muted'>Nenhum item conquistado ainda. Vamos ajudar os papais! ⏳</p></div>";
+                }
+
+            } catch (err) {
+                document.getElementById("carregando").innerHTML = "<h3 class='text-danger'>Erro ao carregar a lista. ❌</h3>";
+            }
+        }
+
+        // --- DUAS TABELAS SEPARADAS (ÁREA DOS PAIS) ---
+        function renderizarTabelaAdmin() {
+            const secaoVisualizar = document.getElementById("subaba-visualizar");
+            secaoVisualizar.innerHTML = `
+                <div class="mb-5">
+                    <h4 class="fw-bold text-danger mb-3">🚨 Itens que Ainda Faltam Cadastrar / Ganhar</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-dark">
+                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem vai dar</th><th>Telefone</th></tr>
+                            </thead>
+                            <tbody id="tabela-admin-faltando"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="fw-bold text-success mb-3">✅ Conquistados! Itens que Já Ganhamos / Foram Reservados</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-success table-dark border-success">
+                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem deu / Reservou</th><th>Telefone</th></tr>
+                            </thead>
+                            <tbody id="tabela-admin-ganhados"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+
+            const corpoFaltando = document.getElementById("tabela-admin-faltando");
+            const corpoGanhados = document.getElementById("tabela-admin-ganhados");
+>>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
 
             cacheItens.forEach(item => {
                 const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") ? item['URL da Foto'] : "";
                 const doador = item['Doador'] || "-";
                 const telefone = item['Telefone'] || "-";
 
+<<<<<<< HEAD
                 corpoTabela.innerHTML += `
+=======
+                const linhaHTML = `
+>>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
                     <tr>
                         <td class="text-center">${fotoLink ? `<img src="${fotoLink}">` : "❌"}</td>
                         <td class="fw-bold">${item['Nome do Item']}</td>
@@ -410,12 +495,26 @@
                         <td><span class="badge ${item['Status'].includes('Faltando') ? 'bg-danger' : 'bg-success'} fs-6">${item['Status']}</span></td>
                         <td class="text-primary fw-bold">${doador}</td>
                         <td>${telefone}</td>
+<<<<<<< HEAD
                     </tr>
                 `;
             });
         }
 
         // --- INSERÇÃO DE NOVO PRESENTE NA PLANILHA DO GOOGLE ---
+=======
+                    </tr>`;
+
+                if (item['Status'] === "🛒 Faltando") { corpoFaltando.innerHTML += linhaHTML; } 
+                else { corpoGanhados.innerHTML += linhaHTML; }
+            });
+
+            if (corpoFaltando.innerHTML === "") { corpoFaltando.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item faltando! 🎉</td></tr>`; }
+            if (corpoGanhados.innerHTML === "") { corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido. ⏳</td></tr>`; }
+        }
+
+        // --- ADIÇÃO DE ITEM COM ATUALIZAÇÃO DE CACHE LOCAL INSTANTÂNEA ---
+>>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
         async function salvarNovoItem() {
             const nome = document.getElementById('add-nome').value;
             const tipo = document.getElementById('add-tipo').value;
@@ -426,6 +525,7 @@
             const doador = document.getElementById('add-doador').value;
             const telefone = document.getElementById('add-telefone').value;
 
+<<<<<<< HEAD
             if (!nome) { 
                 alert("Por favor, digite o nome do item!"); 
                 return; 
@@ -434,10 +534,45 @@
             alert("Sincronizando novo item com o Google Sheets... Clique em OK e aguarde.");
             
             await fetch(WEB_APP_URL, {
+=======
+            if (!nome) { alert("Por favor, digite o nome do item!"); return; }
+
+            // 1. Criamos o objeto do novo item para inserção imediata em tela
+            const novoItemLocal = {
+                "Código": "GERADO_AUTO_" + Date.now(),
+                "Nome do Item": nome,
+                "Tipo": tipo,
+                "Tamanho": tamanho,
+                "Quantidade": quantidade,
+                "URL da Foto": foto || "0",
+                "Status": status,
+                "Doador": doador || "",
+                "Telefone": telefone || ""
+            };
+
+            // 2. Empurramos direto para o array ativo em memória
+            cacheItens.push(novoItemLocal);
+
+            // 3. Atualizamos os painéis visuais imediatamente e limpamos os inputs
+            renderizarTabelaAdmin();
+            carregarPresentes(); // Atualiza os cartões da página pública em segundo plano
+            
+            document.getElementById('add-nome').value = "";
+            document.getElementById('add-foto-arquivo').value = "";
+            document.getElementById('add-foto').value = "";
+            document.getElementById('status-upload').innerHTML = "Tire uma foto ou escolha da galeria.";
+            document.getElementById('status-upload').className = "text-muted d-block mt-1";
+
+            mudarSubAba('visualizar');
+
+            // 4. Dispara a gravação persistente no Sheets por trás dos panos (sem travar a interface)
+            fetch(WEB_APP_URL, {
+>>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
                 method: "POST", 
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
+<<<<<<< HEAD
             });
 
             alert("Item adicionado com sucesso direto no banco! 🎉");
@@ -483,3 +618,52 @@
     </script>
 </body>
 </html>
+=======
+            }).then(() => {
+                console.log("✅ Sincronizado com o Google Sheets com sucesso!");
+            }).catch((err) => {
+                console.error("❌ Erro ao sincronizar com o Sheets:", err);
+            });
+            
+            alert("🎉 Item adicionado com sucesso à sua lista visual! A planilha do Google Sheets está a ser atualizada em segundo plano.");
+        }
+
+        async function tratarReservaLocal(codigo, doador, telefone) {
+            // Atualiza o cache local para refletir na tela imediatamente
+            for (let i = 0; i < cacheItens.length; i++) {
+                if (cacheItens[i]["Código"] === codigo) {
+                    cacheItens[i]["Status"] = "⏳ Reservado (Falta receber)";
+                    cacheItens[i]["Doador"] = doador;
+                    cacheItens[i]["Telefone"] = telefone;
+                    break;
+                }
+            }
+            carregarPresentes();
+        }
+
+        async function reservarItem(codigo, nomeItem) {
+            const doador = prompt(`Ficamos muito felizes! Você escolheu: ${nomeItem}.\n\nDigite seu Nome e Sobrenome para confirmarmos:`);
+            if (!doador || doador.trim() === "") { alert("Reserva cancelada."); return; }
+            const telefone = prompt("Digite seu número de WhatsApp (Opcional):") || "";
+
+            // Otimização visual da reserva
+            tratarReservaLocal(codigo, doador, telefone);
+
+            try {
+                alert("Salvando escolha... Pode clicar em OK.");
+                await fetch(WEB_APP_URL, {
+                    method: "POST", mode: "no-cors", 
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ action: "reservar", codigo, doador, telephone: telefone })
+                });
+                alert(`Muito obrigado, ${doador}! O item foi reservado de forma definitiva. ❤️`);
+            } catch (err) {
+                alert("Prontinho! Seu presente foi reservado com sucesso! ❤️");
+            }
+        }
+
+        carregarPresentes();
+    </script>
+</body>
+</html>
+>>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
