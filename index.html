@@ -246,6 +246,122 @@
         let cacheItens = [];
         let modalLoginBootstrap;
 
+        // --- FUNÇÕES DE RENDERIZAÇÃO INJETADAS NO TOPO PARA EVITAR ERROS DE REFERENCE ---
+        function renderizarInterfacePublica() {
+            const gridFaltando = document.getElementById("grid-presentes-faltando");
+            const gridGanhados = document.getElementById("grid-presentes-ganhados");
+            
+            if (!gridFaltando || !gridGanhados) return;
+
+            gridFaltando.innerHTML = "";
+            gridGanhados.innerHTML = "";
+
+            cacheItens.forEach(item => {
+                const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") 
+                    ? item['URL da Foto'] 
+                    : "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200";
+
+                if (item.Status === "🛒 Faltando") {
+                    gridFaltando.innerHTML += `
+                        <div class="col">
+                            <div class="card-presente">
+                                <div>
+                                    <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
+                                        <img src="${fotoLink}" class="img-produto">
+                                    </div>
+                                    <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
+                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
+                                    <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} un</p>
+                                </div>
+                                <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
+                                    Quero dar este presente 🙋‍♂️
+                                </button>
+                            </div>
+                        </div>`;
+                } else {
+                    gridGanhados.innerHTML += `
+                        <div class="col">
+                            <div class="card-presente ganhado">
+                                <div>
+                                    <div style="background: #F1F5F9; border-radius:12px; padding:10px; margin-bottom:15px;">
+                                        <img src="${fotoLink}" class="img-produto" style="filter: grayscale(30%);">
+                                    </div>
+                                    <h4 class="fw-bold text-secondary text-decoration-line-through mb-3">${item['Nome do Item']}</h4>
+                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span>${item['Tamanho']}</span></p>
+                                </div>
+                                <button class="btn btn-outline-success fw-bold rounded-3 py-2" disabled>
+                                    ✅ Já reservado!
+                                </button>
+                            </div>
+                        </div>`;
+                }
+            });
+
+            if (gridFaltando.innerHTML === "") {
+                gridFaltando.innerHTML = "<div class='w-100 text-center my-3'><h3>🎉 Que alegria! Todos os presentes já foram reservados! ❤️</h3></div>";
+            }
+            if (gridGanhados.innerHTML === "") {
+                gridGanhados.innerHTML = "<div class='w-100 text-center my-3'><p class='text-muted'>Nenhum item conquistado ainda. Vamos ajudar os papais! ⏳</p></div>";
+            }
+        }
+
+        function renderizarTabelaAdmin() {
+            const secaoVisualizar = document.getElementById("subaba-visualizar");
+            if (!secaoVisualizar) return;
+
+            secaoVisualizar.innerHTML = `
+                <div class="mb-5">
+                    <h4 class="fw-bold text-danger mb-3">🚨 Itens que Ainda Faltam Cadastrar / Ganhar</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-dark">
+                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem vai dar</th><th>Telefone</th></tr>
+                            </thead>
+                            <tbody id="tabela-admin-faltando"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="mt-4">
+                    <h4 class="fw-bold text-success mb-3">✅ Conquistados! Itens que Já Ganhamos / Foram Reservados</h4>
+                    <div class="table-responsive">
+                        <table class="table table-striped table-hover align-middle fs-6">
+                            <thead class="table-success table-dark border-success">
+                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem deu / Reservou</th><th>Telefone</th></tr>
+                            </thead>
+                            <tbody id="tabela-admin-ganhados"></tbody>
+                        </table>
+                    </div>
+                </div>`;
+
+            const corpoFaltando = document.getElementById("tabela-admin-faltando");
+            const corpoGanhados = document.getElementById("tabela-admin-ganhados");
+
+            cacheItens.forEach(item => {
+                const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") ? item['URL da Foto'] : "";
+                const doador = item['Doador'] || "-";
+                const telefone = item['Telefone'] || "-";
+
+                const linhaHTML = `
+                    <tr>
+                        <td class="text-center">${fotoLink ? `<img src="${fotoLink}">` : "❌"}</td>
+                        <td class="fw-bold">${item['Nome do Item']}</td>
+                        <td>${item['Tipo']}</td>
+                        <td><span class="badge bg-secondary fs-6">${item['Tamanho']}</span></td>
+                        <td>${item['Quantidade']}</td>
+                        <td><span class="badge ${item['Status'].includes('Faltando') ? 'bg-danger' : 'bg-success'} fs-6">${item['Status']}</span></td>
+                        <td class="text-primary fw-bold">${doador}</td>
+                        <td>${telefone}</td>
+                    </tr>`;
+
+                if (item['Status'] === "🛒 Faltando") { corpoFaltando.innerHTML += linhaHTML; } 
+                else { corpoGanhados.innerHTML += linhaHTML; }
+            });
+
+            if (corpoFaltando.innerHTML === "") { corpoFaltando.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item faltando! 🎉</td></tr>`; }
+            if (corpoGanhados.innerHTML === "") { corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido. ⏳</td></tr>`; }
+        }
+
+        // --- SISTEMA DE NAVEGAÇÃO ---
         function alternarTela(tela) {
             const telaConvidados = document.getElementById('tela-convidados');
             const telaAdmin = document.getElementById('tela-admin');
@@ -258,6 +374,7 @@
                 menuLista.classList.add('active', 'fw-bold');
                 menuAdmin.classList.remove('active', 'fw-bold');
                 menuAdmin.classList.add('text-white-50');
+                renderizarInterfacePublica();
             } else if (tela === 'admin') {
                 telaConvidados.classList.add('d-none');
                 telaAdmin.classList.remove('d-none');
@@ -344,7 +461,7 @@
             } finally { btnSalvar.disabled = false; }
         }
 
-        // --- CARREGAR PRESENTES NAS DUAS SEÇÕES PÚBLICAS ---
+        // --- CARREGAR PRESENTES (CHAMADA INICIAL DA API DO GOOGLE) ---
         async function carregarPresentes() {
             try {
                 const res = await fetch(WEB_APP_URL);
@@ -354,167 +471,13 @@
                 document.getElementById("secao-faltando").classList.remove('d-none');
                 document.getElementById("secao-ganhados").classList.remove('d-none');
 
-                const gridFaltando = document.getElementById("grid-presentes-faltando");
-                const gridGanhados = document.getElementById("grid-presentes-ganhados");
-                
-                gridFaltando.innerHTML = "";
-                gridGanhados.innerHTML = "";
-
-                cacheItens.forEach(item => {
-                    const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") 
-                        ? item['URL da Foto'] 
-                        : "https://images.unsplash.com/photo-1555252333-9f8e92e65df9?q=80&w=200";
-
-<<<<<<< HEAD
-                    grid.innerHTML += `
-                        <div class="col">
-                            <div class="card-presente">
-                                <div>
-                                    <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
-                                        <img src="${fotoLink}" class="img-produto">
-                                    </div>
-                                    <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
-                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">🏷️ <b>Categoria:</b> ${item['Tipo']}</p>
-                                    <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
-                                    <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} unidade(s)</p>
-                                </div>
-                                <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
-                                    Quero dar este presente 🙋‍♂️
-                                </button>
-                            </div>
-                        </div>
-                    `;
-                });
-            } catch (err) {
-                document.getElementById("carregando").innerHTML = "<h3 class='text-danger'>Erro ao carregar a lista. Por favor, verifique a URL do Apps Script. ❌</h3>";
-            }
-        }
-
-        // --- CONSTRUÇÃO DA TABELA GERENCIAL COMPLETA (VISÃO DOS PAIS) ---
-        function renderizarTabelaAdmin() {
-            const corpoTabela = document.getElementById("tabela-admin-corpo");
-            corpoTabela.innerHTML = "";
-=======
-                    if (item.Status === "🛒 Faltando") {
-                        // Card Ativo com Botão de Reserva
-                        gridFaltando.innerHTML += `
-                            <div class="col">
-                                <div class="card-presente">
-                                    <div>
-                                        <div style="background: #FAFAFA; border-radius:12px; padding:10px; margin-bottom:15px;">
-                                            <img src="${fotoLink}" class="img-produto">
-                                        </div>
-                                        <h4 class="fw-bold text-dark mb-3">${item['Nome do Item']}</h4>
-                                        <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span class="tag-tamanho">${item['Tamanho']}</span></p>
-                                        <p class="mb-4 text-muted" style="font-size:1.15rem;">🔢 <b>Quantidade:</b> ${item['Quantidade']} un</p>
-                                    </div>
-                                    <button class="btn-custom" onclick="reservarItem('${item['Código']}', '${item['Nome do Item']}')">
-                                        Quero dar este presente 🙋‍♂️
-                                    </button>
-                                </div>
-                            </div>`;
-                    } else {
-                        // Card Passivo Estilizado (Já Ganhou)
-                        gridGanhados.innerHTML += `
-                            <div class="col">
-                                <div class="card-presente ganhado">
-                                    <div>
-                                        <div style="background: #F1F5F9; border-radius:12px; padding:10px; margin-bottom:15px;">
-                                            <img src="${fotoLink}" class="img-produto" style="filter: grayscale(30%);">
-                                        </div>
-                                        <h4 class="fw-bold text-secondary text-decoration-line-through mb-3">${item['Nome do Item']}</h4>
-                                        <p class="mb-2 text-muted" style="font-size:1.15rem;">📐 <b>Tamanho:</b> <span>${item['Tamanho']}</span></p>
-                                    </div>
-                                    <button class="btn btn-outline-success fw-bold rounded-3 py-2" disabled>
-                                        ✅ Já reservado!
-                                    </button>
-                                </div>
-                            </div>`;
-                    }
-                });
-
-                if (gridFaltando.innerHTML === "") {
-                    gridFaltando.innerHTML = "<div class='w-100 text-center my-3'><h3>🎉 Que alegria! Todos os presentes já foram reservados! ❤️</h3></div>";
-                }
-                if (gridGanhados.innerHTML === "") {
-                    gridGanhados.innerHTML = "<div class='w-100 text-center my-3'><p class='text-muted'>Nenhum item conquistado ainda. Vamos ajudar os papais! ⏳</p></div>";
-                }
-
+                renderizarInterfacePublica();
             } catch (err) {
                 document.getElementById("carregando").innerHTML = "<h3 class='text-danger'>Erro ao carregar a lista. ❌</h3>";
             }
         }
 
-        // --- DUAS TABELAS SEPARADAS (ÁREA DOS PAIS) ---
-        function renderizarTabelaAdmin() {
-            const secaoVisualizar = document.getElementById("subaba-visualizar");
-            secaoVisualizar.innerHTML = `
-                <div class="mb-5">
-                    <h4 class="fw-bold text-danger mb-3">🚨 Itens que Ainda Faltam Cadastrar / Ganhar</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle fs-6">
-                            <thead class="table-dark">
-                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem vai dar</th><th>Telefone</th></tr>
-                            </thead>
-                            <tbody id="tabela-admin-faltando"></tbody>
-                        </table>
-                    </div>
-                </div>
-                <div class="mt-4">
-                    <h4 class="fw-bold text-success mb-3">✅ Conquistados! Itens que Já Ganhamos / Foram Reservados</h4>
-                    <div class="table-responsive">
-                        <table class="table table-striped table-hover align-middle fs-6">
-                            <thead class="table-success table-dark border-success">
-                                <tr><th>Foto</th><th>Item</th><th>Categoria</th><th>Tamanho</th><th>Qtd</th><th>Status</th><th>Quem deu / Reservou</th><th>Telefone</th></tr>
-                            </thead>
-                            <tbody id="tabela-admin-ganhados"></tbody>
-                        </table>
-                    </div>
-                </div>`;
-
-            const corpoFaltando = document.getElementById("tabela-admin-faltando");
-            const corpoGanhados = document.getElementById("tabela-admin-ganhados");
->>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
-
-            cacheItens.forEach(item => {
-                const fotoLink = (item['URL da Foto'] && item['URL da Foto'] !== "0" && item['URL da Foto'] !== "nan") ? item['URL da Foto'] : "";
-                const doador = item['Doador'] || "-";
-                const telefone = item['Telefone'] || "-";
-
-<<<<<<< HEAD
-                corpoTabela.innerHTML += `
-=======
-                const linhaHTML = `
->>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
-                    <tr>
-                        <td class="text-center">${fotoLink ? `<img src="${fotoLink}">` : "❌"}</td>
-                        <td class="fw-bold">${item['Nome do Item']}</td>
-                        <td>${item['Tipo']}</td>
-                        <td><span class="badge bg-secondary fs-6">${item['Tamanho']}</span></td>
-                        <td>${item['Quantidade']}</td>
-                        <td><span class="badge ${item['Status'].includes('Faltando') ? 'bg-danger' : 'bg-success'} fs-6">${item['Status']}</span></td>
-                        <td class="text-primary fw-bold">${doador}</td>
-                        <td>${telefone}</td>
-<<<<<<< HEAD
-                    </tr>
-                `;
-            });
-        }
-
-        // --- INSERÇÃO DE NOVO PRESENTE NA PLANILHA DO GOOGLE ---
-=======
-                    </tr>`;
-
-                if (item['Status'] === "🛒 Faltando") { corpoFaltando.innerHTML += linhaHTML; } 
-                else { corpoGanhados.innerHTML += linhaHTML; }
-            });
-
-            if (corpoFaltando.innerHTML === "") { corpoFaltando.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item faltando! 🎉</td></tr>`; }
-            if (corpoGanhados.innerHTML === "") { corpoGanhados.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-3">Nenhum item recebido. ⏳</td></tr>`; }
-        }
-
-        // --- ADIÇÃO DE ITEM COM ATUALIZAÇÃO DE CACHE LOCAL INSTANTÂNEA ---
->>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
+        // --- ADIÇÃO DE ITEM COM CACHE LOCAL REATIVO IMEDIATO ---
         async function salvarNovoItem() {
             const nome = document.getElementById('add-nome').value;
             const tipo = document.getElementById('add-tipo').value;
@@ -525,19 +488,9 @@
             const doador = document.getElementById('add-doador').value;
             const telefone = document.getElementById('add-telefone').value;
 
-<<<<<<< HEAD
-            if (!nome) { 
-                alert("Por favor, digite o nome do item!"); 
-                return; 
-            }
-
-            alert("Sincronizando novo item com o Google Sheets... Clique em OK e aguarde.");
-            
-            await fetch(WEB_APP_URL, {
-=======
             if (!nome) { alert("Por favor, digite o nome do item!"); return; }
 
-            // 1. Criamos o objeto do novo item para inserção imediata em tela
+            // 1. Criamos o objeto simulado localmente
             const novoItemLocal = {
                 "Código": "GERADO_AUTO_" + Date.now(),
                 "Nome do Item": nome,
@@ -550,95 +503,48 @@
                 "Telefone": telefone || ""
             };
 
-            // 2. Empurramos direto para o array ativo em memória
+            // 2. Empurra para o array local
             cacheItens.push(novoItemLocal);
 
-            // 3. Atualizamos os painéis visuais imediatamente e limpamos os inputs
+            // 3. Atualiza os componentes visuais imediatamente (Tabela e Cards Públicos)
             renderizarTabelaAdmin();
-            carregarPresentes(); // Atualiza os cartões da página pública em segundo plano
+            renderizarInterfacePublica();
             
+            // Limpa o formulário
             document.getElementById('add-nome').value = "";
             document.getElementById('add-foto-arquivo').value = "";
             document.getElementById('add-foto').value = "";
             document.getElementById('status-upload').innerHTML = "Tire uma foto ou escolha da galeria.";
             document.getElementById('status-upload').className = "text-muted d-block mt-1";
 
+            // Redireciona visualmente para a lista
             mudarSubAba('visualizar');
 
-            // 4. Dispara a gravação persistente no Sheets por trás dos panos (sem travar a interface)
+            // 4. Faz o upload assíncrono para o Sheets
             fetch(WEB_APP_URL, {
->>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
                 method: "POST", 
                 mode: "no-cors",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
-<<<<<<< HEAD
-            });
-
-            alert("Item adicionado com sucesso direto no banco! 🎉");
-            location.reload();
-        }
-
-        // --- ATRIBUIÇÃO DE RESERVA DE ITEM (CONVIDADOS) ---
-        async function reservarItem(codigo, nomeItem) {
-            const doador = prompt(`Ficamos muito felizes! Você escolheu: ${nomeItem}.\n\nPor favor, digite seu Nome e Sobrenome para sabermos quem deu:`);
-            
-            if (!doador || doador.trim() === "") {
-                alert("Reserva cancelada. É necessário colocar seu nome para confirmar o presente.");
-                return;
-            }
-
-            const telefone = prompt("Digite seu número de Telefone ou WhatsApp (Opcional):") || "";
-
-            try {
-                alert("Salvando sua escolha... Clique em OK e aguarde um segundo.");
-
-                await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors", 
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        action: "reservar",
-                        codigo: codigo,
-                        doador: doador,
-                        telefone: telephone
-                    })
-                });
-                
-                alert(`Prontinho, ${doador}! O item foi guardado para você. Muito obrigado pelo carinho com a Elis! ❤️`);
-                location.reload();
-            } catch (err) {
-                alert("Prontinho! Seu presente foi reservado com sucesso na planilha! Muito obrigado! ❤️");
-                location.reload();
-            }
-        }
-
-        // Gatilho inicial ao carregar a página
-        carregarPresentes();
-    </script>
-</body>
-</html>
-=======
             }).then(() => {
-                console.log("✅ Sincronizado com o Google Sheets com sucesso!");
+                console.log("✅ Planilha sincronizada com sucesso.");
             }).catch((err) => {
-                console.error("❌ Erro ao sincronizar com o Sheets:", err);
+                console.error("❌ Erro ao enviar para o Sheets:", err);
             });
             
-            alert("🎉 Item adicionado com sucesso à sua lista visual! A planilha do Google Sheets está a ser atualizada em segundo plano.");
+            alert("🎉 Item cadastrado com sucesso! Já o pode visualizar na lista. A sincronização com a Google Planilha está a decorrer em segundo plano.");
         }
 
-        async function tratarReservaLocal(codigo, doador, telefone) {
-            // Atualiza o cache local para refletir na tela imediatamente
+        function tratarReservaLocal(codigo, doador, telefone) {
             for (let i = 0; i < cacheItens.length; i++) {
                 if (cacheItens[i]["Código"] === codigo) {
-                    cacheItens[i]["Status"] = "⏳ Reservado (Falta receber)";
+                    cacheItens[i]["Status"] = "✅ Recebido (Em mãos)"; // Passa a ser item ganho
                     cacheItens[i]["Doador"] = doador;
                     cacheItens[i]["Telefone"] = telefone;
                     break;
                 }
             }
-            carregarPresentes();
+            renderizarInterfacePublica();
         }
 
         async function reservarItem(codigo, nomeItem) {
@@ -646,11 +552,10 @@
             if (!doador || doador.trim() === "") { alert("Reserva cancelada."); return; }
             const telefone = prompt("Digite seu número de WhatsApp (Opcional):") || "";
 
-            // Otimização visual da reserva
             tratarReservaLocal(codigo, doador, telefone);
 
             try {
-                alert("Salvando escolha... Pode clicar em OK.");
+                alert("Salvando escolha... Pode avançar.");
                 await fetch(WEB_APP_URL, {
                     method: "POST", mode: "no-cors", 
                     headers: { "Content-Type": "application/json" },
@@ -662,8 +567,8 @@
             }
         }
 
+        // Inicialização global da aplicação
         carregarPresentes();
     </script>
 </body>
 </html>
->>>>>>> 45c1f2fbdf463beb15de4c206640a240027f6a24
