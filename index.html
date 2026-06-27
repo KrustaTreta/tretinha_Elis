@@ -477,7 +477,7 @@
             }
         }
 
-        // --- ADIÇÃO DE ITEM COM CACHE LOCAL REATIVO IMEDIATO ---
+// --- ADIÇÃO DE ITEM COM CACHE LOCAL REATIVO E ENVIO ROBUSTO ---
         async function salvarNovoItem() {
             const nome = document.getElementById('add-nome').value;
             const tipo = document.getElementById('add-tipo').value;
@@ -490,7 +490,7 @@
 
             if (!nome) { alert("Por favor, digite o nome do item!"); return; }
 
-            // 1. Criamos o objeto simulado localmente
+            // 1. Criamos o objeto simulado localmente para exibição instantânea
             const novoItemLocal = {
                 "Código": "GERADO_AUTO_" + Date.now(),
                 "Nome do Item": nome,
@@ -503,7 +503,7 @@
                 "Telefone": telefone || ""
             };
 
-            // 2. Empurra para o array local
+            // 2. Empurra para o array local na memória do navegador
             cacheItens.push(novoItemLocal);
 
             // 3. Atualiza os componentes visuais imediatamente (Tabela e Cards Públicos)
@@ -520,19 +520,31 @@
             // Redireciona visualmente para a lista
             mudarSubAba('visualizar');
 
-            // 4. Faz o upload assíncrono para o Sheets
+            // 4. Monta os dados no formato x-www-form-urlencoded (Evita rejeição de CORS do Google)
+            const dadosFormulario = new URLSearchParams();
+            dadosFormulario.append('action', 'adicionar');
+            dadosFormulario.append('nome', nome);
+            dadosFormulario.append('tipo', tipo);
+            dadosFormulario.append('tamanho', tamanho);
+            dadosFormulario.append('quantidade', quantidade);
+            dadosFormulario.append('foto', foto || '0');
+            dadosFormulario.append('status', status);
+            dadosFormulario.append('doador', doador || '');
+            dadosFormulario.append('telefone', telefone || '');
+
+            // 5. Faz o upload assíncrono para o Sheets
             fetch(WEB_APP_URL, {
                 method: "POST", 
                 mode: "no-cors",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ action: "adicionar", nome, tipo, tamanho, quantidade, foto, status, doador, telefone })
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: dadosFormulario.toString()
             }).then(() => {
-                console.log("✅ Planilha sincronizada com sucesso.");
+                console.log("✅ Requisição enviada para o Google Sheets.");
             }).catch((err) => {
-                console.error("❌ Erro ao enviar para o Sheets:", err);
+                console.error("❌ Erro na requisição:", err);
             });
             
-            alert("🎉 Item cadastrado com sucesso! Já o pode visualizar na lista. A sincronização com a Google Planilha está a decorrer em segundo plano.");
+            alert("🎉 Item cadastrado com sucesso! Ele já aparece na tela. A planilha do Google está sendo atualizada em segundo plano.");
         }
 
         function tratarReservaLocal(codigo, doador, telefone) {
